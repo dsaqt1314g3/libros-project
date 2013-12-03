@@ -178,6 +178,6 @@ public class BookResource {
 		return rb.build();
 	}
 	
-	//Aqui va el post
+	//Aqui va el post de kilian
 	
 }
