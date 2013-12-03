@@ -37,7 +37,8 @@ public class BookResource {
 
 	@GET
 	@Produces(MediaType.BOOKS_API_BOOK_COLLECTION)
-	public BookCollection getBooks(@QueryParam("consulta") String consulta,
+	public BookCollection getBooks(@QueryParam("titulo") String titulo,
+			@QueryParam("autor") String autor,
 			@QueryParam("offset") String offset,
 			@QueryParam("length") String length,
 			@QueryParam("username") String username) {
@@ -72,9 +73,17 @@ public class BookResource {
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = null;
-			if (consulta != null) {
-				sql = "select * from books where titulo like '%" + consulta
-						+ "%' or autor like '%" + consulta
+			if (autor != null && titulo != null) {
+				sql = "select * from books where (titulo like '%" + titulo
+						+ "%' AND autor like '%" + autor
+						+ "%') ORDER BY lastModified desc LIMIT " + offset + ","
+						+ length;
+			} else if (autor == null && titulo != null) {
+				sql = "select * from books where titulo like '%" + titulo
+						+ "%' ORDER BY lastModified desc LIMIT " + offset + ","
+						+ length;
+			} else if (titulo == null && autor != null) {
+				sql = "select * from books where autor like '%" + autor
 						+ "%' ORDER BY lastModified desc LIMIT " + offset + ","
 						+ length;
 			} else {
@@ -107,14 +116,14 @@ public class BookResource {
 		if (ioffset != 0) {
 			String prevoffset = "" + (ioffset - ilength);
 			books.addLink(BookAPILinkBuilder.buildURIBooks(uriInfo, prevoffset,
-					length, consulta, "prev"));
+					length, titulo, autor, "prev"));
 		}
 		books.addLink(BookAPILinkBuilder.buildURIBooks(uriInfo, offset, length,
-				consulta, "self"));
+				titulo, autor, "self"));
 		String nextoffset = "" + (ioffset + ilength);
 		if (ilength <= icount) {
 			books.addLink(BookAPILinkBuilder.buildURIBooks(uriInfo, nextoffset,
-					length, consulta, "next"));
+					length, titulo, autor, "next"));
 		}
 		return books;
 	}

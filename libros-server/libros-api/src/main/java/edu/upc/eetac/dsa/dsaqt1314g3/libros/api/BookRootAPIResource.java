@@ -22,8 +22,8 @@ public class BookRootAPIResource {
 		BookRootAPI root = new BookRootAPI();
 		root.addLink(BookAPILinkBuilder.buildURIRootAPI(uriInfo));
 		root.addLink(BookAPILinkBuilder.buildTemplatedURIBooks(uriInfo, "books"));
-		root.addLink(BookAPILinkBuilder.buildTemplatedURIBooks(uriInfo, "books", true));
-		root.addLink(BookAPILinkBuilder.buildURIBooks(uriInfo, "create"));
+		root.addLink(BookAPILinkBuilder.buildTemplatedURIBooks(uriInfo, "books", true, true));
+		//root.addLink(BookAPILinkBuilder.buildURIBooks(uriInfo, "create"));
 		return root;
 	}
 

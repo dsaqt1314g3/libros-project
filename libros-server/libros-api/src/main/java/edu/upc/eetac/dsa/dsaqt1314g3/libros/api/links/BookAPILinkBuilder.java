@@ -22,27 +22,37 @@ public class BookAPILinkBuilder {
 	}
  
 	public static final Link buildURIBooks(UriInfo uriInfo, String rel) {
-		return buildURIBooks(uriInfo, null, null, null, rel);
+		return buildURIBooks(uriInfo, null, null, null, null, rel);
 	}
  
 	public static final Link buildURIBooks(UriInfo uriInfo, String offset,
-			String length, String consulta, String rel) {
-		URI uriBooks;
+			String length, String titulo, String autor, String rel) {
+		URI uriBooks = null;
 		if (offset == null && length == null)
 			uriBooks = uriInfo.getBaseUriBuilder().path(BookResource.class)
 					.build();
 		else {
-			if (consulta == null)
+			if (titulo == null && autor == null)
 				uriBooks = uriInfo.getBaseUriBuilder()
 						.path(BookResource.class).queryParam("offset", offset)
 						.queryParam("length", length).build();
-			else
+			else if (titulo==null)
 				uriBooks = uriInfo.getBaseUriBuilder()
 						.path(BookResource.class).queryParam("offset", offset)
 						.queryParam("length", length)
-						.queryParam("consulta", consulta).build();
-		}
- 
+						.queryParam("autor", autor).build();
+			else if (autor==null)
+				uriBooks = uriInfo.getBaseUriBuilder()
+				.path(BookResource.class).queryParam("offset", offset)
+				.queryParam("length", length)
+				.queryParam("titulo", titulo).build();
+			else
+				uriBooks = uriInfo.getBaseUriBuilder()
+				.path(BookResource.class).queryParam("offset", offset)
+				.queryParam("length", length)
+				.queryParam("titulo", titulo)
+				.queryParam("autor", autor).build();
+		} 
 		Link self = new Link();
 		self.setUri(uriBooks.toString());
 		self.setRel(rel);
@@ -54,18 +64,29 @@ public class BookAPILinkBuilder {
  
 	public static final Link buildTemplatedURIBooks(UriInfo uriInfo, String rel) {
  
-		return buildTemplatedURIBooks(uriInfo, rel, false);
+		return buildTemplatedURIBooks(uriInfo, rel, false, false);
 	}
  
 	public static final Link buildTemplatedURIBooks(UriInfo uriInfo,
-			String rel, boolean consulta) {
+			String rel, boolean titulo, boolean autor) {
 		URI uriBooks;
-		if (consulta)
+		if (titulo && autor)
 			uriBooks = uriInfo.getBaseUriBuilder().path(BookResource.class)
 					.queryParam("offset", "{offset}")
 					.queryParam("length", "{length}")
-					.queryParam("consulta", "{consulta}").build();
-		else
+					.queryParam("titulo", "{titulo}")
+					.queryParam("autor", "{autor}").build();
+		else if (titulo && !autor){
+			uriBooks = uriInfo.getBaseUriBuilder().path(BookResource.class)
+					.queryParam("offset", "{offset}")
+					.queryParam("length", "{length}")
+					.queryParam("titulo", "{titulo}").build();
+		}else if (!titulo && autor){
+			uriBooks = uriInfo.getBaseUriBuilder().path(BookResource.class)
+					.queryParam("offset", "{offset}")
+					.queryParam("length", "{length}")
+					.queryParam("autor", "{autor}").build();
+		}else
 			uriBooks = uriInfo.getBaseUriBuilder().path(BookResource.class)
 					.queryParam("offset", "{offset}")
 					.queryParam("length", "{length}").build();
@@ -73,12 +94,15 @@ public class BookAPILinkBuilder {
 		Link link = new Link();
 		link.setUri(URITemplateBuilder.buildTemplatedURI(uriBooks));
 		link.setRel(rel);
-		if (consulta)
-			link.setTitle("Books collection resource filtered by {consulta}");
+		if (titulo && autor)
+			link.setTitle("Books collection resource filtered by {titulo} or {autor}");
+		else if (titulo && !autor)
+			link.setTitle("Books collection resource filtered by {titulo}");
+		else if (!titulo && autor)
+			link.setTitle("Books collection resource filtered by {autor}");
 		else
 			link.setTitle("Books collection resource");
 		link.setType(MediaType.BOOKS_API_BOOK_COLLECTION);
- 
 		return link;
 	}
  
