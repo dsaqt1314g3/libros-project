@@ -29,6 +29,7 @@ import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.model.Book;
 import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.links.BookAPILinkBuilder;
 
 
+
 @Path("/books")
 public class BookResource {
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
@@ -176,6 +177,66 @@ public class BookResource {
 		rb = Response.ok(libro).cacheControl(cc).tag(eTag);
 
 		return rb.build();
+	}
+	
+	@POST
+	@Consumes(MediaType.BOOKS_API_BOOK)
+	@Produces(MediaType.BOOKS_API_BOOK)
+	public Book createBook(Book book) {
+		if (book.getTitulo().length() > 30) {
+			throw new BadRequestException(
+					"title length must be less or equal than 30 characters");
+		}
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServiceUnavailableException(e.getMessage());
+		}
+		try {
+			Statement stmt = conn.createStatement();
+			String sql = "insert into books (titulo, autor, lengua, edicion, fedicion, fimpresion, editorial) values ('"
+					+ book.getTitulo() 	
+					+ "', '"
+					+ book.getAutor()
+					+ "', '" 
+					+ book.getLengua()
+					+ "', '" 
+					+ book.getEdicion()
+					+ "', '" 
+					+ book.getFedicion()
+					+ "', '" 
+					+ book.getFimpresion()
+					+ "', '" 
+					+ book.getEditorial() + "')";
+					
+					
+
+			stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+			ResultSet rs = stmt.getGeneratedKeys();
+			if (rs.next()) {
+				int bookid = rs.getInt(1);
+				book.setId(Integer.toString(bookid));
+				
+
+				String sql2 = "select books.lastModified from books where books.id = "
+						+ bookid;
+				rs = stmt.executeQuery(sql2);
+				if (rs.next()) {
+					book.setLastModified(rs.getTimestamp(1));
+					book.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, book.getId(), "self"));
+				}
+				rs.close();
+				stmt.close();
+				conn.close();
+
+			} else {
+				throw new BookNotFoundException();
+			}
+		} catch (SQLException e) {
+			throw new InternalServerException(e.getMessage());
+		}
+		return book;
 	}
 	
 	//Aqui va el post de kilian
