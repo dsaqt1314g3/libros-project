@@ -28,7 +28,6 @@ import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.model.BookCollection;
 import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.model.Book;
 import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.links.BookAPILinkBuilder;
 
-
 @Path("/books")
 public class BookResource {
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
@@ -74,9 +73,11 @@ public class BookResource {
 			Statement stmt = conn.createStatement();
 			String sql = null;
 			if (consulta != null) {
-				sql = "select * from books where titulo like '%"+consulta+"%' or autor like '%"+consulta+"%' ORDER BY lastModified desc LIMIT "
-						+ offset + "," + length;
-			}else{
+				sql = "select * from books where titulo like '%" + consulta
+						+ "%' or autor like '%" + consulta
+						+ "%' ORDER BY lastModified desc LIMIT " + offset + ","
+						+ length;
+			} else {
 				sql = "select * from books ORDER BY lastModified LIMIT "
 						+ offset + "," + length;
 			}
@@ -92,7 +93,8 @@ public class BookResource {
 				libro.setFimpresion(rs.getString("fimpresion"));
 				libro.setEditorial(rs.getString("editorial"));
 				libro.setLastModified(rs.getTimestamp("lastModified"));
-				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, libro.getId(), "self"));
+				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
+						libro.getId(), "self"));
 				books.addBook(libro);
 				icount++;
 			}
@@ -102,21 +104,21 @@ public class BookResource {
 		} catch (SQLException e) {
 			throw new InternalServerException(e.getMessage());
 		}
-		if(ioffset!=0){
+		if (ioffset != 0) {
 			String prevoffset = "" + (ioffset - ilength);
 			books.addLink(BookAPILinkBuilder.buildURIBooks(uriInfo, prevoffset,
 					length, consulta, "prev"));
 		}
-		books.addLink(BookAPILinkBuilder.buildURIBooks(uriInfo, offset,
-				length, consulta, "self"));
+		books.addLink(BookAPILinkBuilder.buildURIBooks(uriInfo, offset, length,
+				consulta, "self"));
 		String nextoffset = "" + (ioffset + ilength);
-		if(ilength<=icount){
+		if (ilength <= icount) {
 			books.addLink(BookAPILinkBuilder.buildURIBooks(uriInfo, nextoffset,
-				length, consulta, "next"));
-		}		
+					length, consulta, "next"));
+		}
 		return books;
 	}
-	
+
 	@GET
 	@Path("/{bookid}")
 	@Produces(MediaType.BOOKS_API_BOOK)
@@ -134,8 +136,7 @@ public class BookResource {
 		ResultSet rs = null;
 		try {
 			stmt = conn.createStatement();
-			String sql = "select * from books where id="
-					+ bookid;
+			String sql = "select * from books where id=" + bookid;
 			rs = stmt.executeQuery(sql);
 			if (rs.next()) {
 				libro.setId(rs.getString("id"));
@@ -147,7 +148,8 @@ public class BookResource {
 				libro.setFimpresion(rs.getString("fimpresion"));
 				libro.setEditorial(rs.getString("editorial"));
 				libro.setLastModified(rs.getTimestamp("lastModified"));
-				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, libro.getId(), "self"));
+				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
+						libro.getId(), "self"));
 			} else {
 				throw new BookNotFoundException();
 			}
@@ -177,7 +179,84 @@ public class BookResource {
 
 		return rb.build();
 	}
+
+	@PUT
+	@Path("/{bookid}")
+	@Consumes(MediaType.BOOKS_API_BOOK)
+	@Produces(MediaType.BOOKS_API_BOOK)
+	public Book updateSting(@PathParam("bookid") String id, Book libro) {
+		// IF de content > a 0
+		// if (security.isUserInRole("registered")) {
+		// if (!security.getUserPrincipal().getName()
+		// .equals(sting.getUsername()))
+		// throw new ForbiddenException("you are not allowed...");
+		// } else {
+		// // Si fuera admin le dejo pasar
+		// }
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServiceUnavailableException(e.getMessage());
+		}
+		try {
+			Statement stmt = conn.createStatement();
+			String sql = "update books set books.titulo='" + libro.getTitulo()
+					+ "',books.autor='" + libro.getAutor() + "',books.lengua='"
+					+ libro.getLengua() + "',books.edicion='"
+					+ libro.getEdicion() + "',books.fedicion='"
+					+ libro.getFedicion() + "',books.fimpresion='"
+					+ libro.getFimpresion() + "',books.editorial='"
+					+ libro.getEditorial() + "' where books.id=" + id;
+			int rs2 = stmt.executeUpdate(sql);
+			if (rs2 == 0)
+				throw new BookNotFoundException();
+			sql = "select books.lastModified from books where books.id = " + id;
+			ResultSet rs = stmt.executeQuery(sql);
+			if (rs.next()) {
+				libro.setLastModified(rs.getTimestamp("lastModified"));
+				libro.setId(id);
+				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
+						libro.getId(), "self"));
+			}
+			rs.close();
+			stmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			throw new InternalServerException(e.getMessage());
+		}
+		return libro;
+	}
 	
-	//Aqui va el post de kilian
-	
+	@DELETE
+	@Path("/{bookid}")
+	public void deleteSting(@PathParam("bookid") String id) {
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServiceUnavailableException(e.getMessage());
+		}
+		Statement stmt = null;
+		String sql;
+		try {
+			stmt = conn.createStatement();
+			sql = "delete from books where id=" + id;
+			int rs2 = stmt.executeUpdate(sql);
+			if (rs2 == 0)
+				throw new BookNotFoundException();
+
+		} catch (SQLException e) {
+			throw new InternalServerException(e.getMessage());
+		}
+		finally {
+			try {
+				conn.close();
+				stmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 }
