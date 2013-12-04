@@ -104,6 +104,7 @@ public class BookResource {
 				libro.setLastModified(rs.getTimestamp("lastModified"));
 				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
 						libro.getId(), "self"));
+				libro.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "reviews", libro.getId()));
 				books.addBook(libro);
 				icount++;
 			}
@@ -159,6 +160,7 @@ public class BookResource {
 				libro.setLastModified(rs.getTimestamp("lastModified"));
 				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
 						libro.getId(), "self"));
+				libro.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "reviews", libro.getId()));
 			} else {
 				throw new BookNotFoundException();
 			}
@@ -227,6 +229,7 @@ public class BookResource {
 				libro.setId(id);
 				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
 						libro.getId(), "self"));
+				libro.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "reviews", libro.getId()));
 			}
 			rs.close();
 			stmt.close();
@@ -267,5 +270,4 @@ public class BookResource {
 			}
 		}
 	}
-
 }
