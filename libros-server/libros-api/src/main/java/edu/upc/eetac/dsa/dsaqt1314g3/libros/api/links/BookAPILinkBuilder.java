@@ -6,7 +6,6 @@ import javax.ws.rs.core.UriInfo;
 import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.BookResource;
 import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.MediaType;
 import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.BookRootAPIResource;
-import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.ReviewResource;
 import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.model.Book;
 
 import java.net.URI;
@@ -127,7 +126,7 @@ public class BookAPILinkBuilder {
 				.path(BookResource.class, "getBook").build(id);
 		Link link = new Link();
 		link.setUri(bookURI.toString());
-		link.setRel("self");
+		link.setRel(rel);
 		link.setTitle("Book " + id);
 		link.setType(MediaType.BOOKS_API_BOOK);
 
@@ -136,8 +135,8 @@ public class BookAPILinkBuilder {
 
 	public final static Link buildURIReviews(UriInfo uriInfo,
 			String rel, String bookid) {
-		URI uriReview = uriInfo.getBaseUriBuilder().path(ReviewResource.class)
-				.path(ReviewResource.class, "getReviews").build(bookid);
+		URI uriReview = uriInfo.getBaseUriBuilder().path(BookResource.class)
+				.path(BookResource.class, "getReviews").build(bookid);
 		Link link = new Link();
 		link.setUri(uriReview.toString());
 		link.setRel(rel);
@@ -148,11 +147,10 @@ public class BookAPILinkBuilder {
 	
 	public final static Link buildURIReviewId(UriInfo uriInfo,
 			String rel, String reviewid, String bookid) {
-		URI uriReview = uriInfo.getBaseUriBuilder().path(ReviewResource.class)
-				.path(ReviewResource.class, "getReviews").build(bookid);
+		URI uriReview = uriInfo.getBaseUriBuilder().path(BookResource.class).path(BookResource.class, "getReview").build(bookid,reviewid);
 		Link link = new Link();
 		link.setUri(uriReview.toString());
-		link.setRel("self");
+		link.setRel(rel);
 		link.setTitle("Review "+ reviewid);
 		link.setType(MediaType.BOOKS_API_REVIEW);
 		return link;

@@ -14,11 +14,11 @@ public class ReviewCollection {
 		reviews = new ArrayList<Review>();
 	}
 
-	public List<Review> getStings() {
+	public List<Review> getReviews() {
 		return reviews;
 	}
 
-	public void setStings(List<Review> reviews) {
+	public void setReviews(List<Review> reviews) {
 		this.reviews = reviews;
 	}
 

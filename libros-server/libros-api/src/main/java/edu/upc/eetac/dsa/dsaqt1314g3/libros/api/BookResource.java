@@ -26,6 +26,8 @@ import javax.ws.rs.core.UriInfo;
 
 import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.model.BookCollection;
 import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.model.Book;
+import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.model.Review;
+import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.model.ReviewCollection;
 import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.links.BookAPILinkBuilder;
 
 @Path("/books")
@@ -41,8 +43,7 @@ public class BookResource {
 	public BookCollection getBooks(@QueryParam("titulo") String titulo,
 			@QueryParam("autor") String autor,
 			@QueryParam("offset") String offset,
-			@QueryParam("length") String length,
-			@QueryParam("username") String username) {
+			@QueryParam("length") String length) {
 		if ((offset == null) || (length == null))
 			throw new BadRequestException(
 					"offset and length are mandatory parameters");
@@ -190,6 +191,87 @@ public class BookResource {
 		rb = Response.ok(libro).cacheControl(cc).tag(eTag);
 
 		return rb.build();
+	}
+	
+	@GET
+	@Path("/{bookid}/review")
+	@Produces(MediaType.BOOKS_API_REVIEW_COLLECTION)
+	public ReviewCollection getReviews(@PathParam("bookid") String bookid) {
+		ReviewCollection reviews = new ReviewCollection();
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServiceUnavailableException(e.getMessage());
+		}
+		try {
+			Statement stmt = conn.createStatement();
+			String sql = null;
+			if (bookid!=null){
+				sql = "select * from reviews where bookid=" + bookid;
+			}
+			else{
+				throw new BookNotFoundException();
+			}
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				Review reseña = new Review();
+				reseña.setId(rs.getString("id"));
+				reseña.setUsername(rs.getString("username"));
+				reseña.setContent(rs.getString("content"));
+				reseña.setLast_modified(rs.getTimestamp("last_modified"));
+				reseña.addLink(BookAPILinkBuilder.buildURIReviewId(uriInfo, "self", reseña.getId(), bookid));
+				reviews.addReview(reseña);
+			}
+			reviews.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "self", bookid));
+			reviews.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, bookid, "book"));
+			rs.close();
+			stmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			throw new InternalServerException(e.getMessage());
+		}		
+		return reviews;
+	}
+	
+	@GET
+	@Path("/{bookid}/review/{reviewid}")
+	@Produces(MediaType.BOOKS_API_REVIEW)
+	public Review getReview(@PathParam("bookid") String bookid, @PathParam("reviewid") String reviewid){
+		Review reseña = null;
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServiceUnavailableException(e.getMessage());
+		}
+		try {
+			Statement stmt = conn.createStatement();
+			String sql = null;
+			if (bookid!=null && reviewid!=null){
+				sql = "select * from reviews where (bookid=" + bookid + " AND id=" + reviewid + ")";
+			}
+			else{
+				throw new ReviewNotFoundException();
+			}
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				reseña = new Review();
+				reseña.setId(rs.getString("id"));
+				reseña.setUsername(rs.getString("username"));
+				reseña.setContent(rs.getString("content"));
+				reseña.setLast_modified(rs.getTimestamp("last_modified"));
+				reseña.addLink(BookAPILinkBuilder.buildURIReviewId(uriInfo, "self", reseña.getId(), bookid));
+				reseña.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, bookid, "Return to book"));
+				reseña.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "Return to collection reviews", bookid));
+			}
+			rs.close();
+			stmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			throw new InternalServerException(e.getMessage());
+		}		
+		return reseña;
 	}
 
 	@PUT
