@@ -34,7 +34,8 @@ public class BookResource {
 
 	@Context
 	private UriInfo uriInfo;
-
+//pruebA
+	
 	@GET
 	@Produces(MediaType.BOOKS_API_BOOK_COLLECTION)
 	public BookCollection getBooks(@QueryParam("titulo") String titulo,
@@ -331,5 +332,4 @@ public class BookResource {
 			}
 		}
 	}
-
 }
