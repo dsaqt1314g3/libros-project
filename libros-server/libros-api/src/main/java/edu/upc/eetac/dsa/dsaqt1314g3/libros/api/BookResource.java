@@ -468,6 +468,81 @@ public class BookResource {
 		}
 		return review;
 	}
+	
+	@DELETE
+	@Path("/{bookid}/review/{reviewid}")
+	public void deleteReview(@PathParam("reviewid") String id, @PathParam("bookid") String bookid) {
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServiceUnavailableException(e.getMessage());
+		}
+		Statement stmt = null;
+		String sql;
+		try {
+			stmt = conn.createStatement();
+			sql = "delete from reviews where id=" + id;
+			int rs2 = stmt.executeUpdate(sql);
+			if (rs2 == 0)
+				throw new BookNotFoundException();
+
+		} catch (SQLException e) {
+			throw new InternalServerException(e.getMessage());
+		}
+		finally {
+			try {
+				conn.close();
+				stmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	@PUT
+	@Path("/{bookid}/review/{reviewid}")
+	@Consumes(MediaType.BOOKS_API_REVIEW)
+	@Produces(MediaType.BOOKS_API_REVIEW)
+	public Review updateReview(@PathParam("reviewid") String id, Review reseña,@PathParam("bookid") String bookid) {
+		// IF de content > a 0
+		// if (security.isUserInRole("registered")) {
+		// if (!security.getUserPrincipal().getName()
+		// .equals(sting.getUsername()))
+		// throw new ForbiddenException("you are not allowed...");
+		// } else {
+		// // Si fuera admin le dejo pasar
+		// }
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServiceUnavailableException(e.getMessage());
+		}
+		try {
+			Statement stmt = conn.createStatement();
+			String sql = "update reviews set reviews.content='" 
+			+ reseña.getContent()
+			 + "' where reviews.id=" + id;
+			int rs2 = stmt.executeUpdate(sql);
+			if (rs2 == 0)
+				throw new BookNotFoundException();
+			sql = "select reviews.last_modified from reviews where reviews.id = " + id;
+			ResultSet rs = stmt.executeQuery(sql);
+			if (rs.next()) {
+				reseña.setLast_modified(rs.getTimestamp("last_modified"));
+				reseña.setId(id);
+		reseña.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, bookid, "self"));
+		reseña.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "reviews",bookid));
+			
+			}
+			rs.close();
+			stmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			throw new InternalServerException(e.getMessage());
+		}
+		return reseña;
+	}
 		
 		
 	}
