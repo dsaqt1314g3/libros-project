@@ -414,4 +414,59 @@ public class BookResource {
 			}
 		}
 	}
-}
+	
+	@POST
+	@Path("/{bookid}/review")
+	@Consumes(MediaType.BOOKS_API_REVIEW)
+	@Produces(MediaType.BOOKS_API_REVIEW)
+	public Review createReview(@PathParam("bookid") String bookid, Review review) {
+		if (review.getContent().length() > 500) {
+			throw new BadRequestException(
+					"Content length must be less or equal than 500 characters");
+		}
+		Connection conn = null;
+		try {
+			Statement stmt = conn.createStatement();
+			String sql = "insert into reviews (bookid,username,content) values ('"
+					+bookid
+					+ "', '" 
+					+ review.getUsername() 	
+					+ "', '" 
+					+ review.getContent() + "')";
+					
+					
+
+			stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+			ResultSet rs = stmt.getGeneratedKeys();
+		if (rs.next()) {
+			int reviewid = rs.getInt(1);
+				review.setId(Integer.toString(reviewid));
+				
+
+				String sql2 = "select last_modified from reviews where id = "
+						+ reviewid;
+				rs = stmt.executeQuery(sql2);
+				if (rs.next()) {
+					review.setLast_modified(rs.getTimestamp("last_modified"));
+					review.addLink(BookAPILinkBuilder.buildURIReviewId(uriInfo, "self", review.getId(),bookid));
+
+				}
+				rs.close();
+				stmt.close();
+				conn.close();
+
+			} else {
+				throw new BookNotFoundException();
+			}
+		} catch (SQLException e) {
+			throw new InternalServerException(e.getMessage());
+		}
+		return review;
+	}
+		
+		
+	}
+	
+	
+	
+

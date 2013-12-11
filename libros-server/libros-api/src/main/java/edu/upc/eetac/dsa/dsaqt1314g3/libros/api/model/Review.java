@@ -9,11 +9,19 @@ import edu.upc.eetac.dsa.dsaqt1314g3.libros.api.links.Link;
 
 public class Review {
 	private String id;
+	private String bookid;
 	private String username;
 	private String author;
 	private String content;
 	private Date last_modified;
 	private List<Link> links = new ArrayList<Link>();
+	
+	public String getBookid() {
+		return bookid;
+	}
+	public void setBookid(String bookid) {
+		this.bookid = bookid;
+	}
 	
 	public String getId() {
 		return id;
