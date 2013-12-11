@@ -426,6 +426,11 @@ public class BookResource {
 		}
 		Connection conn = null;
 		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServiceUnavailableException(e.getMessage());
+		}
+		try {
 			Statement stmt = conn.createStatement();
 			String sql = "insert into reviews (bookid,username,content) values ('"
 					+bookid
