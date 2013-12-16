@@ -36,6 +36,8 @@ public class BookResource {
 
 	@Context
 	private UriInfo uriInfo;
+	@Context
+	private SecurityContext security;
 
 	// pruebA
 
@@ -288,7 +290,7 @@ public class BookResource {
 	@Consumes(MediaType.BOOKS_API_BOOK)
 	@Produces(MediaType.BOOKS_API_BOOK)
 	public Book updateSting(@PathParam("bookid") String id, Book libro) {
-		// IF de content > a 0
+		// IF del content > a 0
 		// if (security.isUserInRole("registered")) {
 		// if (!security.getUserPrincipal().getName()
 		// .equals(sting.getUsername()))
@@ -296,6 +298,12 @@ public class BookResource {
 		// } else {
 		// // Si fuera admin le dejo pasar
 		// }
+		
+		if (!security.isUserInRole("administrator"))
+		{
+			throw new BadRequestException("Solo administrador puede modificar fichas de libros");
+		}
+		
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -332,11 +340,15 @@ public class BookResource {
 		}
 		return libro;
 	}
+	
 
 	@POST
 	@Consumes(MediaType.BOOKS_API_BOOK)
 	@Produces(MediaType.BOOKS_API_BOOK)
 	public Book createBook(Book book) {
+		 if (!security.isUserInRole("administrator")) {
+			 throw new BadRequestException("you are not allowed...");
+		 }
 		if (book.getTitulo().length() > 30) {
 			throw new BadRequestException(
 					"title length must be less or equal than 30 characters");
@@ -394,6 +406,11 @@ public class BookResource {
 	@Path("/{bookid}")
 	public void deleteSting(@PathParam("bookid") String id) {
 		Connection conn = null;
+		
+		if (!security.isUserInRole("administrator"))
+		{
+			throw new BadRequestException("Solo administrador puede eliminar libros");
+		}
 		try {
 			conn = ds.getConnection();
 		} catch (SQLException e) {
@@ -425,6 +442,12 @@ public class BookResource {
 	@Consumes(MediaType.BOOKS_API_REVIEW)
 	@Produces(MediaType.BOOKS_API_REVIEW)
 	public Review createReview(@PathParam("bookid") String bookid, Review review) {
+		
+		if (!security.isUserInRole("administrator") || (!security.isUserInRole("registered")))
+		{
+			throw new BadRequestException("Solo registrados o admin");
+		}
+		
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -494,6 +517,10 @@ public class BookResource {
 	public void deleteReview(@PathParam("reviewid") String id,
 			@PathParam("bookid") String bookid) {
 		Connection conn = null;
+		if (!security.isUserInRole("registered"))
+		{
+			throw new BadRequestException("Solo registrados");
+		}
 		try {
 			conn = ds.getConnection();
 		} catch (SQLException e) {
@@ -503,10 +530,14 @@ public class BookResource {
 		String sql;
 		try {
 			stmt = conn.createStatement();
-			sql = "delete from reviews where id=" + id;
+			sql = "delete from reviews where (id=" + id
+					 + " AND username='"
+					 + security.getUserPrincipal().getName()
+					 +"')";
+					 
 			int rs2 = stmt.executeUpdate(sql);
 			if (rs2 == 0)
-				throw new ReviewNotFoundException();
+				throw new BadRequestException("no permitido");
 
 		} catch (SQLException e) {
 			throw new InternalServerException(e.getMessage());

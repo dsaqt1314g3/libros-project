@@ -125,8 +125,9 @@
 			<http-method>DELETE</http-method>
 		</web-resource-collection>
 		<auth-constraint>
+		    <role-name>registered</role-name>
 			<role-name>administrator</role-name>
-			<role-name>registered</role-name>
+			
 		</auth-constraint>
 	</security-constraint>
 
