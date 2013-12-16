@@ -71,6 +71,89 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
-    
+    <!-- SECURITY -->
+	<login-config>
+		<auth-method>BASIC</auth-method>
+	</login-config>
+	<security-role>
+		<role-name>registered</role-name>
+	</security-role>
+	<security-role>
+		<role-name>administrator</role-name>
+	</security-role>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>BookRootAPI</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+
+	</security-constraint>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Books</web-resource-name>
+			<url-pattern>/books/*</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>POST</http-method>
+			<http-method>PUT</http-method>
+			<http-method>DELETE</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>administrator</role-name>
+		</auth-constraint>
+	</security-constraint>
+	
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Books users</web-resource-name>
+			<url-pattern>/books/*</url-pattern>
+			<http-method>GET</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>registered</role-name>
+		</auth-constraint>
+	</security-constraint>
+	
+		<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Reviews</web-resource-name>
+			<url-pattern>/books/{bookid}/review/*</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>POST</http-method>
+			<http-method>PUT</http-method>
+			<http-method>DELETE</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>administrator</role-name>
+			<role-name>registered</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Admin for Users</web-resource-name>
+			<url-pattern>/users/*</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>POST</http-method>
+			<http-method>PUT</http-method>
+			<http-method>DELETE</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>administrator</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Resgistered for Users</web-resource-name>
+			<url-pattern>/users/*</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>PUT</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>registered</role-name>
+		</auth-constraint>
+	</security-constraint>
     
 </web-app>
