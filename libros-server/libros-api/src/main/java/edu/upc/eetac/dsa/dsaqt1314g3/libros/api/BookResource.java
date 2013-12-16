@@ -36,6 +36,8 @@ public class BookResource {
 
 	@Context
 	private UriInfo uriInfo;
+	@Context
+	private SecurityContext security;
 
 	// pruebA
 
@@ -337,6 +339,9 @@ public class BookResource {
 	@Consumes(MediaType.BOOKS_API_BOOK)
 	@Produces(MediaType.BOOKS_API_BOOK)
 	public Book createBook(Book book) {
+		 if (!security.isUserInRole("administrator")) {
+			 throw new BadRequestException("you are not allowed...");
+		 }
 		if (book.getTitulo().length() > 30) {
 			throw new BadRequestException(
 					"title length must be less or equal than 30 characters");
