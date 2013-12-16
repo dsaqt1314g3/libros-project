@@ -36,8 +36,9 @@ public class BookResource {
 
 	@Context
 	private UriInfo uriInfo;
-//pruebA
-	
+
+	// pruebA
+
 	@GET
 	@Produces(MediaType.BOOKS_API_BOOK_COLLECTION)
 	public BookCollection getBooks(@QueryParam("titulo") String titulo,
@@ -78,8 +79,8 @@ public class BookResource {
 			if (autor != null && titulo != null) {
 				sql = "select * from books where (titulo like '%" + titulo
 						+ "%' AND autor like '%" + autor
-						+ "%') ORDER BY lastModified desc LIMIT " + offset + ","
-						+ length;
+						+ "%') ORDER BY lastModified desc LIMIT " + offset
+						+ "," + length;
 			} else if (autor == null && titulo != null) {
 				sql = "select * from books where titulo like '%" + titulo
 						+ "%' ORDER BY lastModified desc LIMIT " + offset + ","
@@ -106,7 +107,8 @@ public class BookResource {
 				libro.setLastModified(rs.getTimestamp("lastModified"));
 				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
 						libro.getId(), "self"));
-				libro.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "reviews", libro.getId()));
+				libro.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo,
+						"reviews", libro.getId()));
 				books.addBook(libro);
 				icount++;
 			}
@@ -162,7 +164,8 @@ public class BookResource {
 				libro.setLastModified(rs.getTimestamp("lastModified"));
 				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
 						libro.getId(), "self"));
-				libro.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "reviews", libro.getId()));
+				libro.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo,
+						"reviews", libro.getId()));
 			} else {
 				throw new BookNotFoundException();
 			}
@@ -192,7 +195,7 @@ public class BookResource {
 
 		return rb.build();
 	}
-	
+
 	@GET
 	@Path("/{bookid}/review")
 	@Produces(MediaType.BOOKS_API_REVIEW_COLLECTION)
@@ -207,10 +210,9 @@ public class BookResource {
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = null;
-			if (bookid!=null){
+			if (bookid != null) {
 				sql = "select * from reviews where bookid=" + bookid;
-			}
-			else{
+			} else {
 				throw new BookNotFoundException();
 			}
 			ResultSet rs = stmt.executeQuery(sql);
@@ -220,24 +222,28 @@ public class BookResource {
 				reseña.setUsername(rs.getString("username"));
 				reseña.setContent(rs.getString("content"));
 				reseña.setLast_modified(rs.getTimestamp("last_modified"));
-				reseña.addLink(BookAPILinkBuilder.buildURIReviewId(uriInfo, "self", reseña.getId(), bookid));
+				reseña.addLink(BookAPILinkBuilder.buildURIReviewId(uriInfo,
+						"self", reseña.getId(), bookid));
 				reviews.addReview(reseña);
 			}
-			reviews.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "self", bookid));
-			reviews.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, bookid, "book"));
+			reviews.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "self",
+					bookid));
+			reviews.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, bookid,
+					"book"));
 			rs.close();
 			stmt.close();
 			conn.close();
 		} catch (SQLException e) {
 			throw new InternalServerException(e.getMessage());
-		}		
+		}
 		return reviews;
 	}
-	
+
 	@GET
 	@Path("/{bookid}/review/{reviewid}")
 	@Produces(MediaType.BOOKS_API_REVIEW)
-	public Review getReview(@PathParam("bookid") String bookid, @PathParam("reviewid") String reviewid){
+	public Review getReview(@PathParam("bookid") String bookid,
+			@PathParam("reviewid") String reviewid) {
 		Review reseña = null;
 		Connection conn = null;
 		try {
@@ -248,10 +254,10 @@ public class BookResource {
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = null;
-			if (bookid!=null && reviewid!=null){
-				sql = "select * from reviews where (bookid=" + bookid + " AND id=" + reviewid + ")";
-			}
-			else{
+			if (bookid != null && reviewid != null) {
+				sql = "select * from reviews where (bookid=" + bookid
+						+ " AND id=" + reviewid + ")";
+			} else {
 				throw new ReviewNotFoundException();
 			}
 			ResultSet rs = stmt.executeQuery(sql);
@@ -261,16 +267,19 @@ public class BookResource {
 				reseña.setUsername(rs.getString("username"));
 				reseña.setContent(rs.getString("content"));
 				reseña.setLast_modified(rs.getTimestamp("last_modified"));
-				reseña.addLink(BookAPILinkBuilder.buildURIReviewId(uriInfo, "self", reseña.getId(), bookid));
-				reseña.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, bookid, "Return to book"));
-				reseña.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "Return to collection reviews", bookid));
+				reseña.addLink(BookAPILinkBuilder.buildURIReviewId(uriInfo,
+						"self", reseña.getId(), bookid));
+				reseña.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
+						bookid, "Return to book"));
+				reseña.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo,
+						"Return to collection reviews", bookid));
 			}
 			rs.close();
 			stmt.close();
 			conn.close();
 		} catch (SQLException e) {
 			throw new InternalServerException(e.getMessage());
-		}		
+		}
 		return reseña;
 	}
 
@@ -312,7 +321,8 @@ public class BookResource {
 				libro.setId(id);
 				libro.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
 						libro.getId(), "self"));
-				libro.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "reviews", libro.getId()));
+				libro.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo,
+						"reviews", libro.getId()));
 			}
 			rs.close();
 			stmt.close();
@@ -322,7 +332,7 @@ public class BookResource {
 		}
 		return libro;
 	}
-	
+
 	@POST
 	@Consumes(MediaType.BOOKS_API_BOOK)
 	@Produces(MediaType.BOOKS_API_BOOK)
@@ -340,35 +350,32 @@ public class BookResource {
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "insert into books (titulo, autor, lengua, edicion, fedicion, fimpresion, editorial) values ('"
-					+ book.getTitulo() 	
+					+ book.getTitulo()
 					+ "', '"
 					+ book.getAutor()
-					+ "', '" 
+					+ "', '"
 					+ book.getLengua()
-					+ "', '" 
+					+ "', '"
 					+ book.getEdicion()
-					+ "', '" 
+					+ "', '"
 					+ book.getFedicion()
-					+ "', '" 
+					+ "', '"
 					+ book.getFimpresion()
-					+ "', '" 
-					+ book.getEditorial() + "')";
-					
-					
+					+ "', '" + book.getEditorial() + "')";
 
 			stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
 			ResultSet rs = stmt.getGeneratedKeys();
 			if (rs.next()) {
 				int bookid = rs.getInt(1);
 				book.setId(Integer.toString(bookid));
-				
 
 				String sql2 = "select books.lastModified from books where books.id = "
 						+ bookid;
 				rs = stmt.executeQuery(sql2);
 				if (rs.next()) {
 					book.setLastModified(rs.getTimestamp(1));
-					book.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, book.getId(), "self"));
+					book.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
+							book.getId(), "self"));
 				}
 				rs.close();
 				stmt.close();
@@ -382,7 +389,6 @@ public class BookResource {
 		}
 		return book;
 	}
-	
 
 	@DELETE
 	@Path("/{bookid}")
@@ -404,8 +410,7 @@ public class BookResource {
 
 		} catch (SQLException e) {
 			throw new InternalServerException(e.getMessage());
-		}
-		finally {
+		} finally {
 			try {
 				conn.close();
 				stmt.close();
@@ -414,16 +419,12 @@ public class BookResource {
 			}
 		}
 	}
-	
+
 	@POST
 	@Path("/{bookid}/review")
 	@Consumes(MediaType.BOOKS_API_REVIEW)
 	@Produces(MediaType.BOOKS_API_REVIEW)
 	public Review createReview(@PathParam("bookid") String bookid, Review review) {
-		if (review.getContent().length() > 500) {
-			throw new BadRequestException(
-					"Content length must be less or equal than 500 characters");
-		}
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -432,29 +433,48 @@ public class BookResource {
 		}
 		try {
 			Statement stmt = conn.createStatement();
-			String sql = "insert into reviews (bookid,username,content) values ('"
-					+bookid
-					+ "', '" 
-					+ review.getUsername() 	
-					+ "', '" 
-					+ review.getContent() + "')";
-					
-					
+			String sql = "select * from reviews where (bookid=" + bookid
+					+ " and username='" + review.getUsername() + "')";
+			ResultSet rs = stmt.executeQuery(sql);
+			if (rs.next()) {
+				throw new BadRequestException(
+						"Ya tienes una review de este book.");
+			}
+			rs.close();
+			stmt.close();
+		} catch (SQLException e) {
+			throw new InternalServerException(e.getMessage());
+		}
 
+		if (review.getContent().length() > 500) {
+			throw new BadRequestException(
+					"Content length must be less or equal than 500 characters");
+		}
+		try {
+			Statement stmt = conn.createStatement();
+			String sql = "insert into reviews (bookid,username,content) values ('"
+					+ bookid
+					+ "', '"
+					+ review.getUsername()
+					+ "', '"
+					+ review.getContent() + "')";
 			stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
 			ResultSet rs = stmt.getGeneratedKeys();
-		if (rs.next()) {
-			int reviewid = rs.getInt(1);
+			if (rs.next()) {
+				int reviewid = rs.getInt(1);
 				review.setId(Integer.toString(reviewid));
-				
 
 				String sql2 = "select last_modified from reviews where id = "
 						+ reviewid;
 				rs = stmt.executeQuery(sql2);
 				if (rs.next()) {
 					review.setLast_modified(rs.getTimestamp("last_modified"));
-					review.addLink(BookAPILinkBuilder.buildURIReviewId(uriInfo, "self", review.getId(),bookid));
-
+					review.addLink(BookAPILinkBuilder.buildURIReviewId(uriInfo,
+							"self", review.getId(), bookid));
+					review.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
+							bookid, "Return to book"));
+					review.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo,
+							"Return to collection reviews", bookid));
 				}
 				rs.close();
 				stmt.close();
@@ -468,10 +488,11 @@ public class BookResource {
 		}
 		return review;
 	}
-	
+
 	@DELETE
 	@Path("/{bookid}/review/{reviewid}")
-	public void deleteReview(@PathParam("reviewid") String id, @PathParam("bookid") String bookid) {
+	public void deleteReview(@PathParam("reviewid") String id,
+			@PathParam("bookid") String bookid) {
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -485,12 +506,11 @@ public class BookResource {
 			sql = "delete from reviews where id=" + id;
 			int rs2 = stmt.executeUpdate(sql);
 			if (rs2 == 0)
-				throw new BookNotFoundException();
+				throw new ReviewNotFoundException();
 
 		} catch (SQLException e) {
 			throw new InternalServerException(e.getMessage());
-		}
-		finally {
+		} finally {
 			try {
 				conn.close();
 				stmt.close();
@@ -499,11 +519,13 @@ public class BookResource {
 			}
 		}
 	}
+
 	@PUT
 	@Path("/{bookid}/review/{reviewid}")
 	@Consumes(MediaType.BOOKS_API_REVIEW)
 	@Produces(MediaType.BOOKS_API_REVIEW)
-	public Review updateReview(@PathParam("reviewid") String id, Review reseña,@PathParam("bookid") String bookid) {
+	public Review updateReview(@PathParam("reviewid") String id, Review reseña,
+			@PathParam("bookid") String bookid) {
 		// IF de content > a 0
 		// if (security.isUserInRole("registered")) {
 		// if (!security.getUserPrincipal().getName()
@@ -520,20 +542,22 @@ public class BookResource {
 		}
 		try {
 			Statement stmt = conn.createStatement();
-			String sql = "update reviews set reviews.content='" 
-			+ reseña.getContent()
-			 + "' where reviews.id=" + id;
+			String sql = "update reviews set reviews.content='"
+					+ reseña.getContent() + "' where reviews.id=" + id;
 			int rs2 = stmt.executeUpdate(sql);
 			if (rs2 == 0)
 				throw new BookNotFoundException();
-			sql = "select reviews.last_modified from reviews where reviews.id = " + id;
+			sql = "select reviews.last_modified from reviews where reviews.id = "
+					+ id;
 			ResultSet rs = stmt.executeQuery(sql);
 			if (rs.next()) {
 				reseña.setLast_modified(rs.getTimestamp("last_modified"));
 				reseña.setId(id);
-		reseña.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo, bookid, "self"));
-		reseña.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo, "reviews",bookid));
-			
+				reseña.addLink(BookAPILinkBuilder.buildURIBookId(uriInfo,
+						bookid, "self"));
+				reseña.addLink(BookAPILinkBuilder.buildURIReviews(uriInfo,
+						"reviews", bookid));
+
 			}
 			rs.close();
 			stmt.close();
@@ -543,10 +567,5 @@ public class BookResource {
 		}
 		return reseña;
 	}
-		
-		
-	}
-	
-	
-	
 
+}
