@@ -8,7 +8,6 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -291,6 +290,15 @@ public class BookResource {
 	@Consumes(MediaType.BOOKS_API_BOOK)
 	@Produces(MediaType.BOOKS_API_BOOK)
 	public Book updateSting(@PathParam("bookid") String id, Book libro) {
+		// IF del content > a 0
+		// if (security.isUserInRole("registered")) {
+		// if (!security.getUserPrincipal().getName()
+		// .equals(sting.getUsername()))
+		// throw new ForbiddenException("you are not allowed...");
+		// } else {
+		// // Si fuera admin le dejo pasar
+		// }
+		
 		if (!security.isUserInRole("administrator"))
 		{
 			throw new BadRequestException("Solo administrador puede modificar fichas de libros");
@@ -331,14 +339,15 @@ public class BookResource {
 			throw new InternalServerException(e.getMessage());
 		}
 		return libro;
-	}	
+	}
+	
 
 	@POST
 	@Consumes(MediaType.BOOKS_API_BOOK)
 	@Produces(MediaType.BOOKS_API_BOOK)
 	public Book createBook(Book book) {
 		 if (!security.isUserInRole("administrator")) {
-			 throw new BadRequestException("you are not allowed...");
+			 throw new BadRequestException("Solo admin puede publicar fichas de libros");
 		 }
 		if (book.getTitulo().length() > 30) {
 			throw new BadRequestException(
@@ -433,6 +442,12 @@ public class BookResource {
 	@Consumes(MediaType.BOOKS_API_REVIEW)
 	@Produces(MediaType.BOOKS_API_REVIEW)
 	public Review createReview(@PathParam("bookid") String bookid, Review review) {
+		
+		if  (!security.isUserInRole("registered"))
+		{
+			throw new BadRequestException("Solo registrados o admin");
+		}
+		
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -463,7 +478,7 @@ public class BookResource {
 			String sql = "insert into reviews (bookid,username,content) values ('"
 					+ bookid
 					+ "', '"
-					+ review.getUsername()
+					+ security.getUserPrincipal().getName()
 					+ "', '"
 					+ review.getContent() + "')";
 			stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
@@ -502,6 +517,10 @@ public class BookResource {
 	public void deleteReview(@PathParam("reviewid") String id,
 			@PathParam("bookid") String bookid) {
 		Connection conn = null;
+		if (!security.isUserInRole("registered"))
+		{
+			throw new BadRequestException("Solo registrados");
+		}
 		try {
 			conn = ds.getConnection();
 		} catch (SQLException e) {
@@ -518,7 +537,7 @@ public class BookResource {
 					 
 			int rs2 = stmt.executeUpdate(sql);
 			if (rs2 == 0)
-				throw new BadRequestException("No Deleted");
+				throw new BadRequestException("no permitido");
 
 		} catch (SQLException e) {
 			throw new InternalServerException(e.getMessage());
@@ -538,6 +557,14 @@ public class BookResource {
 	@Produces(MediaType.BOOKS_API_REVIEW)
 	public Review updateReview(@PathParam("reviewid") String id, Review reseña,
 			@PathParam("bookid") String bookid) {
+		// IF de content > a 0
+		// if (security.isUserInRole("registered")) {
+		// if (!security.getUserPrincipal().getName()
+		// .equals(sting.getUsername()))
+		// throw new ForbiddenException("you are not allowed...");
+		// } else {
+		// // Si fuera admin le dejo pasar
+		// }
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -547,7 +574,12 @@ public class BookResource {
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "update reviews set reviews.content='"
-					+ reseña.getContent() + "' where reviews.id=" + id;
+					+ reseña.getContent() 
+					+ "' where (reviews.id=" 
+					+ id
+					+" AND username='"+security.getUserPrincipal().getName()+"')";
+					
+			
 			int rs2 = stmt.executeUpdate(sql);
 			if (rs2 == 0)
 				throw new BookNotFoundException();
