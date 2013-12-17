@@ -117,7 +117,8 @@ public class BookResource {
 			rs.close();
 			stmt.close();
 			conn.close();
-		} catch (SQLException e) {
+		} 
+	catch (SQLException e) {
 			throw new InternalServerException(e.getMessage());
 		}
 		if (ioffset != 0) {
@@ -443,7 +444,7 @@ public class BookResource {
 	@Produces(MediaType.BOOKS_API_REVIEW)
 	public Review createReview(@PathParam("bookid") String bookid, Review review) {
 		
-		if (!security.isUserInRole("administrator") || (!security.isUserInRole("registered")))
+		if  (!security.isUserInRole("registered"))
 		{
 			throw new BadRequestException("Solo registrados o admin");
 		}
