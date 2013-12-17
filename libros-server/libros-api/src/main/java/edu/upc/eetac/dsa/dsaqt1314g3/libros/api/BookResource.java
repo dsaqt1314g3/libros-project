@@ -458,7 +458,7 @@ public class BookResource {
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "select * from reviews where (bookid=" + bookid
-					+ " and username='" + review.getUsername() + "')";
+					+ " and username='" + security.getUserPrincipal().getName() + "')";
 			ResultSet rs = stmt.executeQuery(sql);
 			if (rs.next()) {
 				throw new BadRequestException(
