@@ -291,10 +291,20 @@ public class BookResource {
 	@Consumes(MediaType.BOOKS_API_BOOK)
 	@Produces(MediaType.BOOKS_API_BOOK)
 	public Book updateSting(@PathParam("bookid") String id, Book libro) {
+		// IF del content > a 0
+		// if (security.isUserInRole("registered")) {
+		// if (!security.getUserPrincipal().getName()
+		// .equals(sting.getUsername()))
+		// throw new ForbiddenException("you are not allowed...");
+		// } else {
+		// // Si fuera admin le dejo pasar
+		// }
+		
 		if (!security.isUserInRole("administrator"))
 		{
 			throw new BadRequestException("Solo administrador puede modificar fichas de libros");
-		}		
+		}
+		
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -433,6 +443,12 @@ public class BookResource {
 	@Consumes(MediaType.BOOKS_API_REVIEW)
 	@Produces(MediaType.BOOKS_API_REVIEW)
 	public Review createReview(@PathParam("bookid") String bookid, Review review) {
+		
+		if  (!security.isUserInRole("registered"))
+		{
+			throw new BadRequestException("Solo registrados o admin");
+		}
+		
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
