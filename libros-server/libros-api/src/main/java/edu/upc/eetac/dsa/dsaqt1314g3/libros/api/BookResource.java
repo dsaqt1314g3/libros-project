@@ -8,6 +8,7 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -301,7 +302,7 @@ public class BookResource {
 		
 		if (!security.isUserInRole("administrator"))
 		{
-			throw new BadRequestException("Solo administrador puede modificar fichas de libros");
+			throw new ForbiddenException("Solo admin");
 		}
 		
 		Connection conn = null;
@@ -347,7 +348,7 @@ public class BookResource {
 	@Produces(MediaType.BOOKS_API_BOOK)
 	public Book createBook(Book book) {
 		 if (!security.isUserInRole("administrator")) {
-			 throw new BadRequestException("Solo admin puede publicar fichas de libros");
+			 throw new ForbiddenException("Solo admin");
 		 }
 		if (book.getTitulo().length() > 30) {
 			throw new BadRequestException(
@@ -409,7 +410,7 @@ public class BookResource {
 		
 		if (!security.isUserInRole("administrator"))
 		{
-			throw new BadRequestException("Solo administrador puede eliminar libros");
+			throw new ForbiddenException("Solo admin");
 		}
 		try {
 			conn = ds.getConnection();
@@ -445,7 +446,7 @@ public class BookResource {
 		
 		if  (!security.isUserInRole("registered"))
 		{
-			throw new BadRequestException("Solo registrados o admin");
+			throw new ForbiddenException("Solo usuarios registrados");
 		}
 		
 		Connection conn = null;
@@ -519,7 +520,7 @@ public class BookResource {
 		Connection conn = null;
 		if (!security.isUserInRole("registered"))
 		{
-			throw new BadRequestException("Solo registrados");
+			throw new ForbiddenException("Solo el usuario que ha creado el post puede borrarlo");
 		}
 		try {
 			conn = ds.getConnection();
@@ -557,14 +558,7 @@ public class BookResource {
 	@Produces(MediaType.BOOKS_API_REVIEW)
 	public Review updateReview(@PathParam("reviewid") String id, Review reseña,
 			@PathParam("bookid") String bookid) {
-		// IF de content > a 0
-		// if (security.isUserInRole("registered")) {
-		// if (!security.getUserPrincipal().getName()
-		// .equals(sting.getUsername()))
-		// throw new ForbiddenException("you are not allowed...");
-		// } else {
-		// // Si fuera admin le dejo pasar
-		// }
+		
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
