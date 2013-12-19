@@ -73,6 +73,13 @@ public class LibrosAndroid extends ListActivity
 //		});
 //		Log.d(TAG, "authenticated with " + username + ":" + password);
 	 
+		Authenticator.setDefault(new Authenticator() {
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication("admin", "admin"
+						.toCharArray());
+			}
+		});
+		
 		api = new BookAPI();
 		URL url = null;
 		try {
@@ -117,4 +124,63 @@ public class LibrosAndroid extends ListActivity
 		bookList.addAll(books.getBooks());
 		adapter.notifyDataSetChanged();
 	}
+    
+    @Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		Book book = bookList.get(position);
+	 
+		// HATEOAS version
+		URL url = null;
+		URL urlrev = null;
+		try {
+			url = new URL(book.getLinks().get(0).getUri());
+			urlrev = new URL(book.getLinks().get(1).getUri());
+		} catch (MalformedURLException e) {
+			return;
+		}
+	 
+		// No HATEOAS
+		// URL url = null;
+		// try {
+		// url = new URL("http://" + serverAddress + ":" + serverPort
+		// + "/beeter-api/stings/" + id);
+		// } catch (MalformedURLException e) {
+		// return;
+		// }
+		Log.d(TAG, url.toString());
+		
+		Intent intent = new Intent(this, BookDetail.class);
+		intent.putExtra("url", url.toString());
+		intent.putExtra("urlrev", urlrev);
+		startActivity(intent);
+	}
+
+//	@Override
+//	public boolean onCreateOptionsMenu(Menu menu) {
+//		getMenuInflater().inflate(R., menu);
+//		return true;
+//	}
+
+//	@Override
+//	public boolean onOptionsItemSelected(MenuItem item) {
+//		switch (item.getItemId()) {
+//		case R.id.:
+//			URL url = null;
+//			try {
+//				url = new URL("http://" + serverAddress + ":" + serverPort
+//						+ "/beeter-api/stings");
+//			} catch (MalformedURLException e) {
+//				Log.d(TAG, e.getMessage(), e);
+//			}
+//			Intent intent = new Intent(this, WriteSting.class);
+//			intent.putExtra("url", url);
+//			startActivity(intent);
+//			
+//			return true;
+//	 
+//		default:
+//			return super.onOptionsItemSelected(item);
+//		}
+//	 
+//	}
 }

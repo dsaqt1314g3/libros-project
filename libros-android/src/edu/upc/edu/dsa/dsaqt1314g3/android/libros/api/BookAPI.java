@@ -19,6 +19,44 @@ public class BookAPI {
 	private final static SimpleDateFormat sdf = new SimpleDateFormat(
 			"yyyy-MM-dd HH:mm:ss");
 
+	public Book getBook(URL url) {
+		Book book = new Book();
+
+		HttpURLConnection urlConnection = null;
+		try {
+			urlConnection = (HttpURLConnection) url.openConnection();
+			urlConnection
+					.setRequestProperty("Accept", MediaType.BOOKS_API_BOOK);
+			urlConnection.setRequestMethod("GET");
+			urlConnection.setDoInput(true);
+			urlConnection.connect();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					urlConnection.getInputStream()));
+			StringBuilder sb = new StringBuilder();
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				sb.append(line);
+			}
+
+			JSONObject jsonBook = new JSONObject(sb.toString());
+			book = parseBook(jsonBook);
+		} catch (IOException e) {
+			Log.e(TAG, e.getMessage(), e);
+			return null;
+		} catch (JSONException e) {
+			Log.e(TAG, e.getMessage(), e);
+			return null;
+		} catch (ParseException e) {
+			Log.e(TAG, e.getMessage(), e);
+			return null;
+		} finally {
+			if (urlConnection != null)
+				urlConnection.disconnect();
+		}
+
+		return book;
+	}
+
 	public BookCollection getBooks(URL url) {
 		BookCollection books = new BookCollection();
 
@@ -68,6 +106,55 @@ public class BookAPI {
 		return books;
 	}
 
+	public ReviewCollection getReviews(URL url) {
+		ReviewCollection reviews = new ReviewCollection();
+
+		HttpURLConnection urlConnection = null;
+		try {
+			urlConnection = (HttpURLConnection) url.openConnection();
+
+			urlConnection.setRequestProperty("Accept",
+					MediaType.BOOKS_API_REVIEW_COLLECTION);
+			urlConnection.setRequestMethod("GET");
+			urlConnection.setDoInput(true);
+			urlConnection.connect();
+
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					urlConnection.getInputStream()));
+			StringBuilder sb = new StringBuilder();
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				sb.append(line);
+			}
+
+			JSONObject jsonObject = new JSONObject(sb.toString());
+			JSONArray jsonLinks = jsonObject.getJSONArray("links");
+			parseLinks(jsonLinks, reviews.getLinks());
+
+			JSONArray jsonReviews = jsonObject.getJSONArray("reviews");
+			for (int i = 0; i < jsonReviews.length(); i++) {
+				JSONObject jsonReview = jsonReviews.getJSONObject(i);
+				Review review = parseReview(jsonReview);
+
+				reviews.addReview(review);
+			}
+		} catch (IOException e) {
+			Log.e(TAG, e.getMessage(), e);
+			return null;
+		} catch (JSONException e) {
+			Log.e(TAG, e.getMessage(), e);
+			return null;
+		} catch (ParseException e) {
+			Log.e(TAG, e.getMessage(), e);
+			return null;
+		} finally {
+			if (urlConnection != null)
+				urlConnection.disconnect();
+		}
+
+		return reviews;
+	}
+
 	private void parseLinks(JSONArray source, List<Link> links)
 			throws JSONException {
 		for (int i = 0; i < source.length(); i++) {
@@ -99,5 +186,22 @@ public class BookAPI {
 		JSONArray jsonStingLinks = source.getJSONArray("links");
 		parseLinks(jsonStingLinks, libro.getLinks());
 		return libro;
+	}
+
+	private Review parseReview(JSONObject source) throws JSONException,
+			ParseException {
+		Review review = new Review();
+		review.setId(source.getString("id"));
+		//review.setAuthor(source.getString("autor"));
+		review.setContent(source.getString("content"));
+		review.setUsername(source.getString("username"));
+		review.setBookid(source.getString("bookid"));
+		String tsLastModified = source.getString("lastModified").replace("T",
+				" ");
+		review.setLast_modified(sdf.parse(tsLastModified));
+		
+		JSONArray jsonReviewLinks = source.getJSONArray("links");
+		parseLinks(jsonReviewLinks, review.getLinks());
+		return review;
 	}
 }
